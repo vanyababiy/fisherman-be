@@ -1,27 +1,49 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
-import { formatJSONResponse } from '@libs/api-gateway';
+import * as AWS from 'aws-sdk';
 import { middyfy } from '@libs/lambda';
+import { formatJSONResponse } from '@libs/api-gateway';
+import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 
 import { productSchema } from '../../schemas/productSchema';
-import { productsListMock } from '../../mock/productsListMock';
 
+const DYNAMODB_TABLE_PRODUCTS = process.env.DYNAMODB_TABLE_PRODUCTS;
+const DYNAMODB_TABLE_STOCKS = process.env.DYNAMODB_TABLE_STOCKS;
 
 const getProductsByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof productSchema> = async (event) => {
   try {
-    const data = Promise.resolve([...productsListMock]);
-    const products = await data;
+    console.log(`EVENT\n + ${JSON.stringify(event, null, 2)}`);
 
     const id = event?.pathParameters?.productId;
+    const dynamoDBClient = new AWS.DynamoDB.DocumentClient({});
+    const productParams = {
+      TableName: DYNAMODB_TABLE_PRODUCTS,
+      KeyConditionExpression: 'Id = :id',
+      ExpressionAttributeValues: { ':id': id }
+      ,
+    };
+    const productQueryResponse = await dynamoDBClient.query(productParams).promise();
 
-    const findedProduct = products.find(product => product?.id === id);
-    
-    if (!findedProduct) {
+    const stocksParams = {
+      TableName: DYNAMODB_TABLE_STOCKS,
+      KeyConditionExpression: 'ProductId = :id',
+      ExpressionAttributeValues: { ':id': id }
+    };
+    const stockQueryResponse = await dynamoDBClient.query(stocksParams).promise();
+
+    if (!productQueryResponse.Count || !stockQueryResponse.Count) {
       throw new Error(`Product with such id doesnt exists: ${id}`);
     }
-    
-    return formatJSONResponse(findedProduct);
+
+    const product = {
+      ...productQueryResponse.Items[0],
+      count: stockQueryResponse.Items[0].count,
+    };
+
+    return formatJSONResponse(product);
   } catch (err) {
-    throw err;
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }, null, 2 ),
+    }
   }
 };
 

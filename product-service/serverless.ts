@@ -18,7 +18,21 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      DYNAMODB_TABLE_PRODUCTS: 'Products',
+      DYNAMODB_TABLE_STOCKS: 'Stocks',
     },
+    iamRoleStatements: [
+      {
+        Effect: 'Allow',
+        Action: ['dynamodb:BatchGetItem', 'dynamodb:Scan' , 'dynamodb:Query', 'dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
+        Resource: 'arn:aws:dynamodb:eu-west-1:315697150958:table/Products',
+      },
+      {
+        Effect: 'Allow',
+        Action: ['dynamodb:BatchGetItem', 'dynamodb:Scan', 'dynamodb:Query', 'dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
+        Resource: 'arn:aws:dynamodb:eu-west-1:315697150958:table/Stocks',
+      },
+    ],
   },
   resources: {
     Resources: {
@@ -39,8 +53,8 @@ const serverlessConfiguration: AWS = {
             }
           ],
           ProvisionedThroughput: {
-            ReadCapacityUnits: 5,
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
           }
         }
       },
@@ -61,8 +75,8 @@ const serverlessConfiguration: AWS = {
             }
           ],
           ProvisionedThroughput: {
-            ReadCapacityUnits: 5,
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
           }
         }
       }
