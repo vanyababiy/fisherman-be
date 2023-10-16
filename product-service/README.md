@@ -1,3 +1,7 @@
+# TASK 4.1.
+
+located in `src/scripts/task4.1.js`
+
 # Serverless - AWS Node.js Typescript
 
 This project has been generated using the `aws-nodejs-typescript` template from the [Serverless framework](https://www.serverless.com/).
