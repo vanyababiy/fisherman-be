@@ -10,7 +10,7 @@ const DYNAMODB_TABLE_STOCKS = process.env.DYNAMODB_TABLE_STOCKS;
 
 const getProductsByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof productSchema> = async (event) => {
   try {
-    console.log(`EVENT\n + ${JSON.stringify(event, null, 2)}`);
+    console.log(`GET PRODUCT BY ID EVENT\n + ${JSON.stringify(event, null, 2)}`);
 
     const id = event?.pathParameters?.productId;
     const dynamoDBClient = new AWS.DynamoDB.DocumentClient({});
@@ -35,7 +35,9 @@ const getProductsByIdHandler: ValidatedEventAPIGatewayProxyEvent<typeof productS
 
     const product = {
       ...productQueryResponse.Items[0],
-      count: stockQueryResponse.Items[0].count,
+      id: productQueryResponse.Items[0].id,
+      price: Number(productQueryResponse.Items[0].price),
+      count: Number(stockQueryResponse.Items[0].count),
     };
 
     return formatJSONResponse(product);

@@ -2,13 +2,14 @@ import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 import { BatchGetItemCommand, DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb"
-
-import { productSchema } from './productSchema';
+import { productSchema } from 'src/schemas/productSchema';
 
 const DYNAMODB_TABLE_PRODUCTS = process.env.DYNAMODB_TABLE_PRODUCTS;
 const DYNAMODB_TABLE_STOCKS = process.env.DYNAMODB_TABLE_STOCKS;
 
-const getProductsListHandler: ValidatedEventAPIGatewayProxyEvent<typeof productSchema[]> = async () => {
+const getProductsListHandler: ValidatedEventAPIGatewayProxyEvent<typeof productSchema[]> = async (event) => {
+  console.log(`GET PRODUCT LIST EVENT\n + ${JSON.stringify(event, null, 2)}`);
+
   const dynamoDBClient = new DynamoDBClient({ region: 'eu-west-1'});
 
   try {
@@ -42,9 +43,9 @@ const getProductsListHandler: ValidatedEventAPIGatewayProxyEvent<typeof productS
       return {
         id: product.Id.S,
         description: product.description.S,
-        price: product.price.N,
+        price: Number(product.price.N),
         title: product.title.S,
-        count,
+        count: Number(count),
       }
     });
     
