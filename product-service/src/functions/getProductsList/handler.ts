@@ -1,21 +1,55 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
+import { BatchGetItemCommand, DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb"
+import { productSchema } from 'src/schemas/productSchema';
 
-import { productSchema } from './productSchema';
-import { productsListMock } from '../../mock/productsListMock';
+const DYNAMODB_TABLE_PRODUCTS = process.env.DYNAMODB_TABLE_PRODUCTS;
+const DYNAMODB_TABLE_STOCKS = process.env.DYNAMODB_TABLE_STOCKS;
 
+const getProductsListHandler: ValidatedEventAPIGatewayProxyEvent<typeof productSchema[]> = async (event) => {
+  console.log(`GET PRODUCT LIST EVENT\n + ${JSON.stringify(event, null, 2)}`);
 
-const getProductsListHandler: ValidatedEventAPIGatewayProxyEvent<typeof productSchema[]> = async () => {
+  const dynamoDBClient = new DynamoDBClient({ region: 'eu-west-1'});
+
   try {
-    const data = Promise.resolve([...productsListMock]);
-    const products = await data;
+    const productsParams = {
+      TableName: DYNAMODB_TABLE_PRODUCTS,
+    };
+    const productsScanCommand = new ScanCommand(productsParams);
+    const productsResponse = await dynamoDBClient.send(productsScanCommand);
 
-    if (!products) {
+    if (productsResponse.Items.length === 0) {
       throw new Error('Product not found!');
     }
+
+    const stocksParams = {
+      RequestItems: {
+        [DYNAMODB_TABLE_STOCKS]: {
+          Keys: productsResponse.Items.map((product) => {
+            return {
+              ProductId: { S: product.Id.S },
+            }
+          }),
+        },
+      },
+    };
+    const stocksScanCommand = new BatchGetItemCommand(stocksParams);
+    const stocksResponse = await dynamoDBClient.send(stocksScanCommand);
+
+    const response = productsResponse.Items.map(product => {
+      const count = stocksResponse.Responses.Stocks.find(stock => stock.ProductId.S === product.Id.S).count.N;
+
+      return {
+        id: product.Id.S,
+        description: product.description.S,
+        price: Number(product.price.N),
+        title: product.title.S,
+        count: Number(count),
+      }
+    });
     
-    return formatJSONResponse(products);
+    return formatJSONResponse(response);
   } catch (err) {
     throw err;
   }

@@ -1,3 +1,15 @@
+# TASK 4
+
+4.1 located in `src/scripts/task4.1.js`
+
+`endpoints`:
+  `GET` - https://yaae3ggakb.execute-api.eu-west-1.amazonaws.com/dev/products
+  `GET` - https://yaae3ggakb.execute-api.eu-west-1.amazonaws.com/dev/products/{productId}
+  `POST` - https://yaae3ggakb.execute-api.eu-west-1.amazonaws.com/dev/products
+
+`fe endpoint`:
+https://d1rkwcat5b1c6z.cloudfront.net/
+
 # Serverless - AWS Node.js Typescript
 
 This project has been generated using the `aws-nodejs-typescript` template from the [Serverless framework](https://www.serverless.com/).
