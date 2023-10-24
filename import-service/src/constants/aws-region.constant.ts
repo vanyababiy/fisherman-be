@@ -1,0 +1,1 @@
+export const awsRegion = 'eu-west-1';
