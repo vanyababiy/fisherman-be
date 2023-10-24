@@ -3,7 +3,6 @@ import { handlerPath } from '@libs/handler-resolver';
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.importFileParser`,
-  url: true,
   events: [
     {
       s3: {
@@ -13,9 +12,6 @@ export default {
         rules: [
           {
             prefix: 'uploaded/',
-          },
-          {
-            suffix: '.csv',
           },
         ],
       },

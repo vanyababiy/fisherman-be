@@ -78,6 +78,7 @@ const serverlessConfiguration: AWS = {
                       's3:DeleteObject',
                     ],
                     Resource: [
+                      `arn:aws:s3:::${fishermanImportUploadedBucketName}/*`,
                       `arn:aws:s3:::${fishermanImportUploadedBucketName}/uploaded/*`,
                       `arn:aws:s3:::${fishermanImportUploadedBucketName}/parsed/*`,
                     ],
@@ -90,20 +91,19 @@ const serverlessConfiguration: AWS = {
       },
     },
   },
-  // import the function via paths
   functions: {
     importProductsFile,
     importFileParser,
   },
   package: { individually: true },
   custom: {
-    s3: {
-      cors: {
-        origins: ['*'],  // You can restrict this to specific origins
-        methods: ['GET', 'PUT', 'POST', 'DELETE'],
-        headers: ['*'],
-      }
-    },
+    // s3: {
+    //   cors: {
+    //     origins: ['*'],
+    //     methods: ['GET', 'PUT', 'POST', 'DELETE'],
+    //     headers: ['*'],
+    //   }
+    // },
     esbuild: {
       bundle: true,
       minify: false,

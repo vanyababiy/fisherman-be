@@ -8,13 +8,14 @@ import { getSignedUrl } from '@services/aws.service';
 const importProductsFileHandler: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
   console.log('LAMBDA EVENT\n', event);
 
-  const name = event?.queryStringParameters;
+  const name = event?.queryStringParameters?.name;
 
   if (!name) {
     throw new Error('Please provide name');
   }
 
-  // const decodedName = decodeURIComponent(name.toString());
+  console.log('\n\n\nname');
+  console.log(name);
 
   try {
     const fileUploadKey = `uploaded/${name}`;
@@ -24,6 +25,8 @@ const importProductsFileHandler: ValidatedEventAPIGatewayProxyEvent<any> = async
       fileUploadKey,
     );
 
+    console.log('\n\n\nsignedUrl');
+    console.log(signedUrl);
     return formatJSONResponse({ url: signedUrl }, 200);
   } catch (err) {
     return formatJSONResponse({ message: err.message }, 400);
